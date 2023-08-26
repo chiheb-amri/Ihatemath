@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Calculatrice de Matrices</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+  <style>
+    body {
+      background-color: white;
+      color: black;
+      text-align: center;
+      margin: 0;
+      padding: 0;
+      transition: background-color 0.3s, color 0.3s;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 10vh;
+    }
+
+    .container {
+      padding: 20px;
+    }
+
+    textarea {
+      width: 75%;
+      text-align: center;
+    }
+
+    .btn {
+      display: block;
+      margin-bottom: 17px;
+      padding: 10px 20px;
+      font-size: 12px;
+      font-weight: bold;
+      text-decoration: none;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      border-radius: 10px;
+      border: 2px solid #000;
+      color: #000;
+      background-color: transparent;
+      transition: background-color 0.3s ease, color 0.3s ease;
+    }
+
+    .dark-mode .btn {
+      border-color: #fff;
+      color: #fff;
+    }
+
+    .btn:hover {
+      background-color: #000;
+      color: #fff;
+    }
+
+    .dark-mode .btn:hover {
+      background-color: #fff;
+      color: #000;
+    }
+
+    #darkModeToggle {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      cursor: pointer;
+    }
+
+    .dark-mode {
+      background-color: black;
+      color: white;
+    }
+
+    /* Hide calculator elements initially */
+    .hidden {
+      display: none;
+    }
+
+    .instructions {
+      text-align: center;
+      font-size: 14px;
+      margin-top: 10px;
+      margin-bottom: 20px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>MATRICE</h1>
+
+    <div class="form-group">
+      <label for="numMatrices">Nombre de Matrices:</label>
+      <input type="number" class="form-control" id="numMatrices">
+    </div>
+    <button class="btn btn-primary" onclick="createMatrices()">Cr?er des Matrices</button>
+
+    <div class="instructions hidden">
+      <p><strong>Entr&eacute;e de Matrice :</strong> Entrez chaque &eacute;l&eacute;ment de la matrice s&eacute;par&eacute;s par des espaces. Commencez une nouvelle ligne pour chaque ligne de la matrice.</p>
+      <p>Par exemple, pour une matrice 3x3 :<br>1 2 5<br>3 4 7<br>4 5 0</p>
+    </div>
+
+    <div id="matrixInputs" class="hidden">
+      <!-- Les matrices seront g&eacute;n&eacute;r&eacute;es ici -->
+    </div>
+    <br>
+
+    <div class="form-group hidden">
+      <label for="calculation">Calcul Personnalis&eacute; :</label>
+      <input type="text" class="form-control" id="calculation" placeholder="ex. : A + B, B - C, 2 * A, ...">
+    </div>
+    <button class="btn btn-primary hidden" onclick="performCustomCalculation()">Calculer</button>
+    <br>
+
+    <label for="resultMatrix" class="hidden">Matrice R&eacute;sultante :</label>
+    <textarea id="resultMatrix" rows="4" readonly class="hidden"></textarea>
+
+    <i id="darkModeToggle" class="fas fa-lightbulb"></i>
+  </div>
+
+  <script>
+    let matrices = {};
+
+    function createMatrices() {
+      const numMatrices = parseInt(document.getElementById('numMatrices').value);
+      const matrixInputsDiv = document.getElementById('matrixInputs');
+      matrixInputsDiv.innerHTML = '';
+
+      for (let i = 0; i < numMatrices; i++) {
+        const matrixLabel = document.createElement('label');
+        matrixLabel.textContent = `Matrice ${String.fromCharCode(65 + i)} : `;
+        const matrixInput = document.createElement('textarea');
+        matrixInput.rows = 4;
+        matrixInput.className = 'form-control matrix-input';
+        matrixInputsDiv.appendChild(matrixLabel);
+        matrixInputsDiv.appendChild(matrixInput);
+        matrixInputsDiv.appendChild(document.createElement('br'));
+      }
+
+      // Afficher les &eacute;l&eacute;ments cach&eacute;s de la calculatrice et les instructions
+      const hiddenElements = document.querySelectorAll('.hidden');
+      hiddenElements.forEach(element => element.classList.remove('hidden'));
+    }
+
+    function parseMatrix(matrixStr) {
+      return matrixStr.trim().split('\n').map(row => row.trim().split(/\s+/).map(Number));
+    }
+
+    function evaluateExpression(expression) {
+      const regex = /([A-Z])(?:\s*([+\-*])\s*([A-Z]))?|(\d+(?:\.\d+)?)\s*([+\-*])\s*([A-Z])/;
+      const match = expression.match(regex);
+
+      if (match) {
+        const [, matrixVar1, operator, matrixVar2, scalar, scalarOperator, scalarMatrixVar] = match;
+
+        if (scalar) {
+          const scalarValue = parseFloat(scalar);
+          const scalarMatrix = matrices[scalarMatrixVar];
+          if (!isNaN(scalarValue) && scalarMatrix) {
+            if (scalarOperator === '*') {
+              return scalarMatrix.map(row => row.map(cell => cell * scalarValue));
+            } else {
+              return null; // Op&eacute;ration scalaire invalide
+            }
+          }
+        } else if (matrixVar1 && operator && matrixVar2) {
+          const matrix1 = matrices[matrixVar1];
+          const matrix2 = matrices[matrixVar2];
+          if (operator === '+') {
+            return matrix1.map((row, i) => row.map((cell, j) => cell + matrix2[i][j]));
+          } else if (operator === '-') {
+            return matrix1.map((row, i) => row.map((cell, j) => cell - matrix2[i][j]));
+          } else if (operator === '*') {
+            const result = [];
+            for (let i = 0; i < matrix1.length; i++) {
+              const newRow = [];
+              for (let j = 0; j < matrix2[0].length; j++) {
+                let sum = 0;
+                for (let k = 0; k < matrix1[0].length; k++) {
+                  sum += matrix1[i][k] * matrix2[k][j];
+                }
+                newRow.push(sum);
+              }
+              result.push(newRow);
+            }
+            return result;
+          }
+        }
+      }
+
+      return null; // Expression invalide
+    }
+
+    function performCustomCalculation() {
+      matrices = {};
+      const matrixInputs = document.getElementsByClassName('matrix-input');
+      for (let i = 0; i < matrixInputs.length; i++) {
+        matrices[String.fromCharCode(65 + i)] = parseMatrix(matrixInputs[i].value);
+      }
+
+      const customCalculation = document.getElementById('calculation').value;
+      const resultMatrixTextArea = document.getElementById('resultMatrix');
+
+      const result = evaluateExpression(customCalculation);
+      if (result) {
+        resultMatrixTextArea.value = result.map(row => row.join(' ')).join('\n');
+      } else {
+        resultMatrixTextArea.value = 'Expression invalide.';
+      }
+    }
+
+    const darkModeToggle = document.getElementById('darkModeToggle');
+    const body = document.body;
+
+    darkModeToggle.addEventListener('click', () => {
+      body.classList.toggle('dark-mode');
+    });
+  </script>
+</body>
+</html>
+
+

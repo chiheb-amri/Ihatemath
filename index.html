@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Page de Chargement</title>
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+  <style>
+    :root {
+      --font-name: Impact, serif;
+      --loader-size: 1.7rem;
+      --loader-border-width: 0.23rem;
+      --loader-border-color: #000;
+      --loader-shadow-color: rgba(0, 0, 0, 0.75);
+    }
+
+    body {
+      background-color: #ffffff;
+      font-family: var(--font-name);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    .loading-screen {
+      text-align: center;
+    }
+
+    .text-container {
+      margin-bottom: 2rem;
+    }
+
+    .loading-text {
+      font-size: 15px;
+      margin-bottom: 0.5rem;
+    }
+
+    .loader-container {
+      display: flex;
+      justify-content: center;
+      align-items: flex-end;
+    }
+
+    .loader {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: var(--loader-size);
+      height: var(--loader-size);
+    }
+
+    .loader:before,
+    .loader:after {
+      content: "";
+      position: absolute;
+      border-radius: 50%;
+      animation: pulsOut 1.8s ease-in-out infinite;
+      filter: drop-shadow(0 0 1rem var(--loader-shadow-color));
+    }
+
+    .loader:before {
+      width: 100%;
+      height: 100%;
+      box-shadow: inset 0 0 0 var(--loader-border-width) var(--loader-border-color);
+      animation-name: pulsIn;
+    }
+
+    .loader:after {
+      width: calc(100% - (2 * var(--loader-border-width)));
+      height: calc(100% - (2 * var(--loader-border-width)));
+      box-shadow: 0 0 0 0 var(--loader-border-color);
+    }
+
+    @keyframes pulsIn {
+      0% {
+        box-shadow: inset 0 0 0 var(--loader-border-width) var(--loader-border-color);
+        opacity: 1;
+      }
+      50%, 100% {
+        box-shadow: inset 0 0 0 0 var(--loader-border-color);
+        opacity: 0;
+      }
+    }
+
+    @keyframes pulsOut {
+      0%, 50% {
+        box-shadow: 0 0 0 0 var(--loader-border-color);
+        opacity: 0;
+      }
+      100% {
+        box-shadow: 0 0 0 var(--loader-border-width) var(--loader-border-color);
+        opacity: 1;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="loading-screen">
+    <div class="text-container">
+      <div class="loading-text" id="loading-content"></div>
+    </div>
+    <div class="loader-container">
+      <div class="loader"></div>
+    </div>
+  </div>
+
+  <script>
+    // Fonction pour g?n?rer un tableau al?atoire
+    function generateRandomArray() {
+      const content = [
+        "2 + 2 = 4 !",
+        "Le mathematicien aime calculer, mais n'aime pas se soucier des calculs !",
+        "Les nombres premiers sont comme des perles rares en mathematiques.",
+        "Les mathematiques sont les notes de musique de l'univers.",
+        "La multiplication rend les nombres amis.",
+        "Calculs financiers : l'argent dans le monde numerique.",
+        "L'algebre decrypte les mysteres des chiffres.",
+        "Le hasard n'est qu'une question de probabilite.",
+        "L'horloge mathematique compte avec des modules.",
+        "Les mathematiques tracent les tendances du monde.",
+        "Les fractions decimales sont des divisions delicieuses.",
+        "Les mathematiques et l'informatique : un mariage parfait.",
+        "Trigonometrie : dans l'ombre de l'angle.",
+        "Les exposants font grandir les nombres.",
+        "Statistiques : secrets des donnees.",
+        "Les equations sont des enigmes pour les nombres.",
+        "Les mathematiques sont le code de l'informatique.",
+        "Les mathematiques eclairent le climat et les previsions meteo.",
+        "Analyse : decomposition des donnees.",
+        "Pourquoi les mathematiciens aiment-ils les cours d'eau ? Parce qu'ils ont une obsession pour les flux !",
+        "Chaque chiffre est une piece du puzzle mathematique.",
+        "Un mathematicien est le meilleur ami du nombre pi (pi).",
+        "L'algebre resout les mysteres des equations.",
+        "Les nombres premiers ont une personnalite unique.",
+        "Les mathematiques traduisent le langage de l'univers.",
+        "Division : partage equitable de nombres.",
+        "Les mathematiques financieres : budget intelligent.",
+        "Les racines carrees sont les origines des nombres.",
+        "Probabilite : l'art de predire le chaos.",
+        "Les theoremes sont les fondements des mathematiques.",
+        "Pourquoi les mathematiciens et les pommes s'entendent-ils bien ? Parce qu'ils savent comment calculer les problemes a croquer !"
+        // Ajoutez plus d'elements de contenu ici
+      ];
+      return content.sort(() => 0.5 - Math.random()); // Melange aleatoirement le tableau
+    }
+
+    // Fonction pour afficher un contenu aleatoire
+    function showRandomContent() {
+      const loadingText = document.getElementById('loading-content');
+      const randomArray = generateRandomArray();
+      const randomIndex = Math.floor(Math.random() * randomArray.length);
+      loadingText.textContent = randomArray[randomIndex];
+    }
+
+    // Appelle la fonction pour afficher le contenu initial
+    showRandomContent();
+
+    // Redirige vers la page principale apres 5 secondes
+    setTimeout(function () {
+      window.location.href = "main.html";
+    }, 5000);
+  </script>
+</body>
+</html>
+
+

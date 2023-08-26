@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Statistiques</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/katex/0.13.11/katex.min.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/katex/0.13.11/katex.min.css">
+  <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@700&display=swap');
+
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      transition: background-color 0.3s ease;
+    }
+
+    h1 {
+      font-size: 36px;
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      margin-top: 20px;
+    }
+
+    .container {
+      margin: 0 auto;
+      max-width: 800px;
+      text-align: center;
+    }
+
+    table {
+      margin-top: 30px;
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    th, td {
+      padding: 10px;
+      border: 1px solid #000;
+    }
+
+    .chart-container {
+      margin-top: 30px;
+      position: relative;
+    }
+
+    .btn-container {
+      margin-top: 20px;
+      text-align: center;
+    }
+
+    .btn {
+      margin-right: 10px;
+      margin-bottom: 10px;
+      display: inline-block;
+      padding: 10px 20px;
+      font-size: 16px;
+      font-weight: bold;
+      text-decoration: none;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      border-radius: 5px;
+      border: 2px solid #000;
+      color: #000;
+      background-color: #fff;
+      transition: background-color 0.3s ease;
+    }
+
+    .btn:hover {
+      background-color: #000;
+      color: #fff;
+    }
+
+    .dark-mode {
+      background-color: #000;
+      color: #fff;
+    }
+
+    .dark-mode h1 {
+      color: #fff;
+    }
+
+    .dark-mode th, .dark-mode td {
+      border-color: #fff;
+      color: #fff;
+    }
+
+    .dark-mode .btn {
+      border-color: #fff;
+      color: #fff;
+      background-color: #000;
+    }
+
+    .dark-mode .btn:hover {
+      background-color: #fff;
+      color: #000;
+    }
+
+    .lamp-icon {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      border-radius: 50%;
+      background-color: #fff;
+      padding: 10px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    .lamp-icon i {
+      color: #000;
+      font-size: 20px;
+    }
+
+    .dark-mode .lamp-icon {
+      background-color: #000;
+    }
+
+    .dark-mode .lamp-icon i {
+      color: #fff;
+    }
+
+    .result-box {
+      margin-top: 30px;
+      padding: 20px;
+      border: 2px solid #000;
+      transition: background-color 0.3s ease;
+    }
+
+    .dark-mode .result-box {
+      background-color: #000;
+      border: 2px solid #fff;
+    }
+
+    .result-box h2 {
+      margin-top: 0;
+      font-size: 24px;
+    }
+
+    .result-box p {
+      margin-bottom: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Statistiques</h1>
+    <table id="data-table">
+      <tr>
+        <th>X</th>
+        <th>Y</th>
+      </tr>
+      <tr>
+        <td contenteditable="true"></td>
+        <td contenteditable="true"></td>
+      </tr>
+    </table>
+    <div class="btn-container">
+      <button class="btn" onclick="addLine()">Ajouter</button>
+      <button class="btn" onclick="removeLine()">Supprimer</button>
+      <button class="btn" onclick="drawChart()">Dessiner</button>
+    </div>
+    <div class="chart-container">
+      <div id="chart"></div>
+    </div>
+    <div class="lamp-icon" id="dark-mode-toggle">
+      <i class="fas fa-lightbulb"></i>
+    </div>
+    <div class="result-box">
+      <h2>Resultats</h2>
+      <div id="result-info">
+        <p><strong>X&#772;:</strong> <span id="mean-x"></span></p>
+        <p><strong>Y&#772;:</strong> <span id="mean-y"></span></p>
+        <p><strong>Point moyen G:</strong> <span id="point-g"></span></p>
+        <p><strong>Variance de Y:</strong> <span id="variance-y"></span></p>
+        <p><strong>Variance de X:</strong> <span id="variance-x"></span></p>
+        <p><strong>Ecart-type de X:</strong> <span id="stddev-x"></span></p>
+        <p><strong>Ecart-type de Y:</strong> <span id="stddev-y"></span></p>
+        <p><strong>Coefficient de correlation (r):</strong> <span id="correlation-coefficient"></span></p>
+        <p><strong>Covariance de (X, Y):</strong> <span id="covariance"></span></p>
+        <p><strong>Formule de la droite de regression:</strong> <span id="regression-line"></span></p>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js"></script>
+  <script>
+    // Load the Google Charts API
+    google.charts.load('current', {'packages':['corechart']});
+
+    // Global variable to store chart data
+    var chartData = [];
+
+    // Function to add a new line to the table
+    function addLine() {
+      var table = document.getElementById('data-table');
+      var row = table.insertRow(-1);
+      row.innerHTML = '<td contenteditable="true"></td><td contenteditable="true"></td>';
+      drawChart();
+    }
+
+    // Function to remove the last line from the table
+    function removeLine() {
+      var table = document.getElementById('data-table');
+      if (table.rows.length > 2) {
+        table.deleteRow(-1);
+        drawChart();
+      }
+    }
+
+    // Function to convert table data to chart data format
+    function convertToChartData() {
+      var table = document.getElementById('data-table');
+      var rows = table.rows;
+      var data = [['X', 'Y']];
+
+      for (var i = 1; i < rows.length; i++) {
+        var x = parseFloat(rows[i].cells[0].innerText);
+        var y = parseFloat(rows[i].cells[1].innerText);
+
+        if (!isNaN(x) && !isNaN(y)) {
+          data.push([x, y]);
+        }
+      }
+
+      chartData = data;
+    }
+
+    // Function to calculate the mean of a given dataset
+    function calculateMean(data) {
+      var sum = 0;
+      for (var i = 0; i < data.length; i++) {
+        sum += data[i];
+      }
+      return sum / data.length;
+    }
+
+    // Function to calculate the variance of a given dataset
+    function calculateVariance(data) {
+      var mean = calculateMean(data);
+      var sum = 0;
+      for (var i = 0; i < data.length; i++) {
+        sum += Math.pow(data[i] - mean, 2);
+      }
+      return sum / data.length;
+    }
+
+    // Function to calculate the standard deviation of a given dataset
+    function calculateStdDev(data) {
+      return Math.sqrt(calculateVariance(data));
+    }
+
+    // Function to calculate the correlation coefficient of two datasets
+    function calculateCorrelationCoefficient(xData, yData) {
+      var meanX = calculateMean(xData);
+      var meanY = calculateMean(yData);
+
+      var sumXY = 0;
+      var sumXSquare = 0;
+      var sumYSquare = 0;
+
+      for (var i = 0; i < xData.length; i++) {
+        sumXY += (xData[i] - meanX) * (yData[i] - meanY);
+        sumXSquare += Math.pow(xData[i] - meanX, 2);
+        sumYSquare += Math.pow(yData[i] - meanY, 2);
+      }
+
+      return sumXY / Math.sqrt(sumXSquare * sumYSquare);
+    }
+
+    // Function to calculate the covariance of two datasets
+    function calculateCovariance(xData, yData) {
+      var meanX = calculateMean(xData);
+      var meanY = calculateMean(yData);
+
+      var sumXY = 0;
+
+      for (var i = 0; i < xData.length; i++) {
+        sumXY += (xData[i] - meanX) * (yData[i] - meanY);
+      }
+
+      return sumXY / xData.length;
+    }
+
+    // Function to calculate the regression line coefficients (a and b)
+    function calculateRegressionLineCoefficients(xData, yData) {
+      var meanX = calculateMean(xData);
+      var meanY = calculateMean(yData);
+
+      var sumXY = 0;
+      var sumXSquare = 0;
+
+      for (var i = 0; i < xData.length; i++) {
+        sumXY += (xData[i] - meanX) * (yData[i] - meanY);
+        sumXSquare += Math.pow(xData[i] - meanX, 2);
+      }
+
+      var a = sumXY / sumXSquare;
+      var b = meanY - a * meanX;
+
+      return { a: a, b: b };
+    }
+
+    // Function to update the result information
+    function updateResultInformation() {
+      var xData = chartData.slice(1).map(function(row) { return row[0]; });
+      var yData = chartData.slice(1).map(function(row) { return row[1]; });
+
+      var meanX = calculateMean(xData);
+      var meanY = calculateMean(yData);
+
+      var pointG = [meanX, meanY];
+
+      var varianceX = calculateVariance(xData);
+      var varianceY = calculateVariance(yData);
+
+      var stddevX = calculateStdDev(xData);
+      var stddevY = calculateStdDev(yData);
+
+      var correlationCoefficient = calculateCorrelationCoefficient(xData, yData);
+
+      var covariance = calculateCovariance(xData, yData);
+
+      var regressionLineCoefficients = calculateRegressionLineCoefficients(xData, yData);
+
+      var regressionLineFormula = 'y = ' + regressionLineCoefficients.a.toFixed(2) + 'x + ' + regressionLineCoefficients.b.toFixed(2);
+
+      document.getElementById('mean-x').textContent = meanX.toFixed(2);
+      document.getElementById('mean-y').textContent = meanY.toFixed(2);
+      document.getElementById('point-g').textContent = '(' + pointG.join(', ') + ')';
+      document.getElementById('variance-x').textContent = varianceX.toFixed(2);
+      document.getElementById('variance-y').textContent = varianceY.toFixed(2);
+      document.getElementById('stddev-x').textContent = stddevX.toFixed(2);
+      document.getElementById('stddev-y').textContent = stddevY.toFixed(2);
+      document.getElementById('correlation-coefficient').textContent = correlationCoefficient.toFixed(2);
+      document.getElementById('covariance').textContent = covariance.toFixed(2);
+      document.getElementById('regression-line').textContent = regressionLineFormula;
+    }
+
+    // Function to draw the chart
+    function drawChart() {
+      convertToChartData();
+      updateResultInformation();
+
+      var data = google.visualization.arrayToDataTable(chartData);
+
+      var options = {
+        title: 'Diagramme de dispersion',
+        legend: 'none',
+        hAxis: { title: 'X' },
+        vAxis: { title: 'Y' },
+        pointSize: 5,
+        colors: ['#4285F4']
+      };
+
+      var chart = new google.visualization.ScatterChart(document.getElementById('chart'));
+      chart.draw(data, options);
+    }
+
+    // Function to toggle dark mode
+    function toggleDarkMode() {
+      var body = document.getElementsByTagName('body')[0];
+      body.classList.toggle('dark-mode');
+    }
+
+    // Event listener for dark mode toggle
+    var darkModeToggle = document.getElementById('dark-mode-toggle');
+    darkModeToggle.addEventListener('click', toggleDarkMode);
+  </script>
+</body>
+</html>
+
+
+
+
+
